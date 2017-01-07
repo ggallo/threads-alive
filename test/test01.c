@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "threadsalive.h"
+#include "../threadsalive.h"
 
 void thread1(void *arg)
 {

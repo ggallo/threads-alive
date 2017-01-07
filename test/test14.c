@@ -6,7 +6,7 @@
 #include <errno.h>
 #include <assert.h>
 
-#include "threadsalive.h"
+#include "../threadsalive.h"
 
 #ifndef TRUE
 #define TRUE 1

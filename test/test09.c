@@ -6,7 +6,7 @@
 #include <errno.h>
 #include <assert.h>
 
-#include "threadsalive.h"
+#include "../threadsalive.h"
 
 #ifndef TRUE
 #define TRUE 1
@@ -18,25 +18,10 @@
 
 typedef struct {
     int stop;
-
     int atTable;
     tasem_t atTableSem;
     tasem_t chopstickSem[NPHILOSOPHERS];
 } shared_data_t;
-
-
-void killerthr(void *v)
-{
-    shared_data_t *d = (shared_data_t*)v;
-    time_t finish = time(NULL) + 5;
-
-    while (time(NULL) < finish)
-    {
-        ta_yield(); 
-    }
-    d->stop = TRUE;
-}
-
 
 void think(int i)
 {
@@ -52,10 +37,19 @@ void eat(int i)
 
 void take_chopsticks(int i, shared_data_t *data)
 {
-    fprintf(stderr, "Philosopher %d is taking chopsticks %d and %d\n", i, i, (i+1) % NPHILOSOPHERS);
-    ta_sem_wait(&data->chopstickSem[i]);
-    ta_sem_wait(&data->chopstickSem[(i+1)%NPHILOSOPHERS]);
+    fprintf(stderr, "Philosopher %d is taking chopsticks %d and %d\n", i, i, (i+1)%NPHILOSOPHERS);
+    if (i == (NPHILOSOPHERS-1))
+    {
+        ta_sem_wait(&data->chopstickSem[0]);
+        ta_sem_wait(&data->chopstickSem[i]);
+    }
+    else
+    {
+        ta_sem_wait(&data->chopstickSem[i]);
+        ta_sem_wait(&data->chopstickSem[i+1]);
+    }
 }
+    
 
 void release_chopsticks(int i, shared_data_t *data)
 {
@@ -64,6 +58,17 @@ void release_chopsticks(int i, shared_data_t *data)
     ta_sem_signal(&data->chopstickSem[(i+1)%NPHILOSOPHERS]);
 }
 
+
+void killerthr(void *vptr)
+{
+    shared_data_t *data = (shared_data_t*)vptr;
+    time_t finish = time(NULL) + 5;
+    while (time(NULL) < finish)
+    {
+       ta_yield();
+    }
+    data->stop = TRUE;
+}
 
 void philosophize(void *vptr)
 {
@@ -87,11 +92,12 @@ void philosophize(void *vptr)
 
 int main(int argc, char **argv)
 {
-    ta_libinit();
-
     shared_data_t shared_data;
     int i;
+    ta_libinit();
+
     srandom(time(NULL));
+
     memset(&shared_data, 0, sizeof(shared_data_t));
 
     ta_sem_init(&shared_data.atTableSem, 1); 
@@ -100,14 +106,14 @@ int main(int argc, char **argv)
         ta_sem_init(&shared_data.chopstickSem[i], 1); 
     }
 
-    ta_create(killerthr, (void*)&shared_data);
+    ta_create(killerthr, (void *)&shared_data);
     for (i = 0; i < NPHILOSOPHERS; i++)
     {
         ta_create(philosophize, (void *)&shared_data);
     }
 
     int rv = ta_waitall();
-    assert(rv < 0);
+    assert( rv < 0);
 
     return 0;
 }

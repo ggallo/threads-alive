@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include "threadsalive.h"
+#include "../threadsalive.h"
 
 void thread1(void *arg)
 {

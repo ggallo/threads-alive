@@ -3,7 +3,7 @@
 #include <assert.h>
 #include <time.h>
 #include <string.h>
-#include "threadsalive.h"
+#include "../threadsalive.h"
 
 talock_t *locks = NULL;
 int *data = NULL;

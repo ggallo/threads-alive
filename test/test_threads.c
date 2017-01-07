@@ -1,4 +1,4 @@
-#include "threadsalive.h"
+#include "../threadsalive.h"
 #include <stdio.h>
 
 static tasem_t sem;

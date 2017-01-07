@@ -4,7 +4,7 @@
 #include <time.h>
 #include <string.h>
 #include <signal.h>
-#include "threadsalive.h"
+#include "../threadsalive.h"
 
 #define DATALEN 100
 #define DURATION 3
